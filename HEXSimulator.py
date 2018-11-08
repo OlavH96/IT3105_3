@@ -1,6 +1,7 @@
 from HEX import *
 from HEXCell import *
 from Player import *
+import HEXDrawer
 
 if __name__ == '__main__':
 
@@ -11,9 +12,16 @@ if __name__ == '__main__':
 
     board = game.board
 
-    print(game.is_valid_move(0, 0))
-    for row in board:
-        print(row)
+    # print(game.is_valid_move(0, 0))
+    # for row in board:
+    #     print(row)
+    # print(game.get_cell(0,0).neighbours)
+    for c in board[0]:
+        c.player = Player.PLAYER_1
+    for c in board[3]:
+        c.player = Player.PLAYER_1
+
+    HEXDrawer.graph(board)
 
     #print(game.get_legal_moves(0,0))
 
@@ -21,4 +29,4 @@ if __name__ == '__main__':
 
     # print(game.get_legal_moves(0, 0))
     # print(game.get_legal_moves(1, 1))
-    print(game.get_legal_moves(3, 3))
+    # print(game.get_legal_moves(3, 3))
