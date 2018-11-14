@@ -5,28 +5,46 @@ from HEXCell import *
 from Player import *
 import HEXDrawer
 import time
+from MCTS import *
+from HEXStateManager import *
+from RandomPolicy import *
+def play_game(mcts, player):
+    hex = HEX(5, player)  # todo get from mcts
+
+    while not game.is_done():
+        pass
+
+
+def player_from_string(P):
+    if P == "Player 1":
+        init_player = Player.PLAYER_1
+    elif P == "Player 2":
+        init_player = Player.PLAYER_2
+    elif P == "mix":
+        init_player = random.choice([Player.PLAYER_1, Player.PLAYER_2])
+    else:
+        raise Exception("Invalid Player Choice")
+    return init_player
+
 
 if __name__ == '__main__':
-
     print("Simulating HEX")
 
     size = 4
+    G = 1
+    P = "Player 1"
+    default_policy = RandomPolicy()
+    initial_player = player_from_string(P)
+    stateman = HEXStateManager()
+    game = stateman.generate_initial_state([size], player=initial_player)
 
-    game = HEX(size, Player.PLAYER_1)
+    for i in range(G):
 
-    game.__graph_current_state__()
+        mcts = MCTS(statemanager=stateman, initial_state=game, policy=policy, default_policy=policy, M=M)
 
-    for i in range(size):
-        game.get_cell(3,i).player = Player.PLAYER_2
-        game.__graph_current_state__()
-    print(game.is_done())
+        winner = play_game(mcts, initial_player)
+        # mcts.tree.print_entire_tree()
+        print("Winner",winner)
 
-    # while not game.is_done():
-    #     print(game.is_done())
-    #     choices = game.__get_all_nodes_as_list__()
-    #     valid = list(filter(lambda cell: game.is_valid_move_cell(cell), choices))
-    #     choice = random.choice(valid)
-    #     game.do_move_from_cell(choice)
-    #     game.__graph_current_state__()
-
-    game.__graph_current_state__()
+        if P == "mix" or P == "Mix":
+            init_player = random.choice([Player.PLAYER_1, Player.PLAYER_2])
