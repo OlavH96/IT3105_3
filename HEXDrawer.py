@@ -33,11 +33,12 @@ def graph(nodes, name="HEX", dname="graphs", draw_branches=True):
         for cell in row:
             _nodes.append(cell)
     nodes = _nodes
-
+    added = []
     for node in nodes:
 
         g.add_node(pydot.Node(hash(node), label="", shape="hexagon", width=1, height=1, color=color_of_node(node)))
         for suc in node.neighbours:
-            g.add_edge(Edge(node.__hash__(), suc.__hash__(), color='red', shape='-' ))
-
+            if suc not in added:
+                g.add_edge(Edge(node.__hash__(), suc.__hash__(), color='red', arrhowhead='vee'))
+        added.append(node)
     g.write_png('%s/%s.png' % (dname, name), prog='neato')
