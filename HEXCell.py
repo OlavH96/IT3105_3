@@ -3,6 +3,7 @@ class HEXCell:
     def __init__(self, x, y):
         self.player = None
         self.neighbours = set()
+        self.owner = None
         self.x = x
         self.y = y
 

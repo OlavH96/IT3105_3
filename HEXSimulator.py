@@ -1,36 +1,32 @@
+import random
+
 from HEX import *
 from HEXCell import *
 from Player import *
 import HEXDrawer
+import time
 
 if __name__ == '__main__':
 
-
     print("Simulating HEX")
 
-    game = HEX(4,4, Player.PLAYER_1)
+    size = 4
 
-    board = game.board
+    game = HEX(size, Player.PLAYER_1)
 
-    # print(game.is_valid_move(0, 0))
-    # for row in board:
-    #     print(row)
-    # print(game.get_cell(0,0).neighbours)
-    # for c in board[0]:
-    #     c.player = Player.PLAYER_1
-    # for c in board[3]:
-    #     c.player = Player.PLAYER_1
-    var = board[0][0]
-    var.player = Player.PLAYER_1
-    # for n in var.neighbours:
-    #     n.player = Player.PLAYER_2
+    game.__graph_current_state__()
 
-    HEXDrawer.graph(board)
+    for i in range(size):
+        game.get_cell(3,i).player = Player.PLAYER_2
+        game.__graph_current_state__()
+    print(game.is_done())
 
-    #print(game.get_legal_moves(0,0))
+    # while not game.is_done():
+    #     print(game.is_done())
+    #     choices = game.__get_all_nodes_as_list__()
+    #     valid = list(filter(lambda cell: game.is_valid_move_cell(cell), choices))
+    #     choice = random.choice(valid)
+    #     game.do_move_from_cell(choice)
+    #     game.__graph_current_state__()
 
-
-
-    # print(game.get_legal_moves(0, 0))
-    # print(game.get_legal_moves(1, 1))
-    # print(game.get_legal_moves(3, 3))
+    game.__graph_current_state__()
