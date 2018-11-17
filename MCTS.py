@@ -23,7 +23,9 @@ class MCTS:
             state = initial_state.__copy__()
 
             while not self.statemanager.is_final_state(state):
-                move = self.default_policy.chose(state, self.statemanager.get_moves(state), initial_state.initial_player)
+                if len(self.statemanager.get_moves(state)) == 0: break
+                move = self.default_policy.chose(state, self.statemanager.get_moves(state),
+                                                 initial_state.initial_player)
                 state = self.statemanager.do_move(state, move)
 
             if self.statemanager.is_win(state, initial_state.initial_player):  # state.winnerF() == self.root.player:
@@ -37,9 +39,9 @@ class MCTS:
     def tree_search(self, node, policy=None):
         if not policy: policy = self.policy
 
-        if len(node.edges) == 0 and not self.statemanager.is_final_state(node.content):
+        if len(node.edges) == 0:  # and not self.statemanager.is_final_state(node.content):
             self.node_expansion(node)  # Expand nodes one layer
-            #node.visits += 1
+            # node.visits += 1
             for edge in node.edges:  # Get all the moves / edges
                 to_node = edge.toNode
                 evaluation = self.leaf_evaluation(to_node)  # evaluate each to-node, aka the new nodes
@@ -47,12 +49,12 @@ class MCTS:
         else:
             pass
 
-
         choices = [e.content for e in node.edges]
         # for c in choices:
         #     print(c)
+        # print(choices)
         choice = policy.chose(node, choices, node.content.initial_player)
-        #choice.visits += 1
+        # choice.visits += 1
         # print("choice", choice)
         return choice
 

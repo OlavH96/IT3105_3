@@ -10,3 +10,8 @@ class Player(Enum):
         if player is Player.PLAYER_1:
             return Player.PLAYER_2
         return Player.PLAYER_1
+
+    @staticmethod
+    def to_int(player: object) -> int:
+        if player is None: return 0
+        return 1 if player == Player.PLAYER_1 else -1
