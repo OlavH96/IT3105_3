@@ -10,9 +10,11 @@ if __name__ == '__main__':
     nn = KerasNN.KerasNN(config)
     model = nn.build()
 
-    model.fit(X, Y, epochs=1000)
+    #model.fit(X, Y, epochs=10)
     # evaluate the model
-    scores = model.evaluate(X, Y)
-    print("\n%s: %.2f%%" % (model.metrics_names[1], scores[1] * 100))
+    #scores = model.evaluate(X, Y)
+    #print("\n%s: %.2f%%" % (model.metrics_names[1], scores[1] * 100))
+    nn.print()
+    print(model.predict([[X[0]]]))
     # model.save("model.h5")
     # keras.models.load_model

@@ -9,60 +9,45 @@ from MCTS import *
 from HEXStateManager import *
 from RandomPolicy import *
 from NNPolicy import *
+from Policy import *
+from kerasnn.KerasConfig import *
 
 
 def play_game(mcts, player, policy, stateman: HEXStateManager, data):
     start: Node = mcts.tree
     state: Node = start
-    #game: HEX = state.content.__copy__()
 
-    while not stateman.is_final_state(state.content):#game.is_done():
+    while not stateman.is_final_state(state.content):
 
-        # if stateman.is_final_state(game) or stateman.is_final_state(state.content):
-        #     print("ERROR")
-        #     print(game)
-        #     print(state)
-        #     print(stateman.is_final_state(game))
-        #     print(stateman.is_final_state(state.content))
-
-        choice = mcts.tree_search(state)
+        choice: Move = mcts.tree_search(state)
+        print("Choice", choice)
 
         child_node: Node = state.getChildByEdge(choice)
+        print("Child node",child_node)
+        mcts.tree.print_entire_tree()
+        state: Node = child_node
 
-        # game.do_move_from_cell(choice.move)
-
-        state = child_node  ##stateman.do_move(hex, choice)
-
-        state.content.__graph_current_state__()
-
+    state.content.__graph_current_state__(i)
     return state.content.get_winner()
 
 
-def player_from_string(P):
-    if P == "Player 1":
-        init_player = Player.PLAYER_1
-    elif P == "Player 2":
-        init_player = Player.PLAYER_2
-    elif P == "mix":
-        init_player = random.choice([Player.PLAYER_1, Player.PLAYER_2])
-    else:
-        raise Exception("Invalid Player Choice")
-    return init_player
+
 
 
 if __name__ == '__main__':
     print("Simulating HEX")
 
     size = 3
-    G = 50
+    G = 10
     P = "Player 1"
-    M = 1
-    default_policy = RandomPolicy()
-    initial_player = player_from_string(P)
+    M = 10
+    initial_player = Player.player_from_string(P)
+    default_policy = Policy(initial_player)
     stateman = HEXStateManager()
     game: HEX = stateman.generate_initial_state([size], player=initial_player)
 
-    nn_policy = NNPolicy(len(game.__get_all_cells_as_list__()), len(game.get_all_legal_moves()))
+    config: KerasConfig = KerasConfig(ndim=[size**2, size**2, size**2], oaf="relu")
+    nn_policy = NNPolicy(config)
     # game.do_move(0,0)
     # game.do_move(1,1)
     print(nn_policy.chose(game))
@@ -76,7 +61,7 @@ if __name__ == '__main__':
     losses = 0
     for i in range(G):
         copy = game.__copy__()
-        mcts = MCTS(statemanager=stateman, initial_state=copy, policy=default_policy, default_policy=default_policy,
+        mcts = MCTS(statemanager=stateman, initial_state=copy, policy=nn_policy, default_policy=nn_policy,
                     M=M)
 
         winner = play_game(mcts, initial_player, default_policy, stateman, [size])

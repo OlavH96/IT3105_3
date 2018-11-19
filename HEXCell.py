@@ -12,7 +12,8 @@ class HEXCell:
         hex_cell.neighbours.add(self)
 
     def __str__(self):
-        return "{x="+str(self.x)+" ,y="+str(self.y)+", player=" + str(self.player) + "}"
+        return "{x=" + str(self.x) + " ,y=" + str(self.y) + ", player=" + str(self.player) + "}"
 
     def __repr__(self):
         return self.__str__()
+

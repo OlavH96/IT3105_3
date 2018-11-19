@@ -46,7 +46,7 @@ class HEXStateManager:
 
     def do_move(self, state: HEX, move: Move):
         copy: HEX = state.__copy__()
-        copy.do_move_from_cell(move.move)
+        copy.do_move_from_cell(move)
         return copy
 
     def is_win(self, state: HEX, player):

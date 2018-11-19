@@ -19,7 +19,9 @@ class Node:
         return Node.find(content, self)
 
     def getChildByEdge(self, edgeContent):
+        print("Getting child by edge",self, edgeContent)
         for edge in self.edges:
+            print("Edge",edge.content)
             if edge.content == edgeContent: return edge.toNode
 
     def getEdgeTo(self, otherNode):

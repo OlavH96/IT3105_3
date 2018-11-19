@@ -7,6 +7,7 @@ import copy
 class HEX:
 
     def __init__(self, size: int, initial_player: Player):
+        self.visits = 0
         self.size: int = size
         self.board: [[HEXCell]] = [[HEXCell(x, y) for x in range(size)] for y in range(size)]
         self.initial_player: Player = initial_player
@@ -143,8 +144,8 @@ class HEX:
         # self.all_nodes = _nodes  # caching
         return _nodes
 
-    def __graph_current_state__(self):
-        HEXDrawer.graph(self.__get_all_cells_as_list__())
+    def __graph_current_state__(self, file_number=""):
+        HEXDrawer.graph(self.__get_all_cells_as_list__(), name="HEX"+str(file_number))
 
     def __copy__(self):
         return copy.deepcopy(self)
