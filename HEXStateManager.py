@@ -48,6 +48,9 @@ class HEXStateManager:
         copy: HEX = state.__copy__()
         copy.do_move_from_cell(move.move)
         return copy
+    def do_move_no_copy(self, state: HEX, move: Move):
+        state.do_move_from_cell(move.move)
+        return state
 
     def is_win(self, state: HEX, player):
         return state.get_winner() == player

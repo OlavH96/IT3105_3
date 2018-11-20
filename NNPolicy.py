@@ -75,5 +75,9 @@ class NNPolicy:
         inputs = self.__hex_to_nn_inputs__(hex_state)
         dist = [v for d, v in distribution]
         PID = Player.to_int(hex_state)
+        #print(inputs)
+        #print(dist)
+        dist = [dist.pop(0) if d == 0 else 0 for i,d in enumerate(inputs)]
+        #print(dist)
         # inputs = [[inputs]]
         return TrainingCase(inputs, dist, PID)

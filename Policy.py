@@ -17,9 +17,9 @@ class Policy:
     def u(self, node, action):
         Ns = node.visits
         Nsa = action.visits
-        if Ns == 0: Ns = 1
+        # if Ns == 0: Ns = 1
 
-        return self.c * sqrt(log10(Ns) / (1 + Nsa))
+        return self.c * sqrt(log10(Ns if Ns > 0 else 1) / (1 + Nsa))
 
     def chose(self, node, actions, initial_player):
 

@@ -63,5 +63,5 @@ class Node:
                 return node
 
     def get_visit_count_distribution(self):
-        dist = [(e.content.parent, e.toNode.visits) for e in self.edges]
+        dist = [(e.content.parent, e.content.visits) for e in self.edges]
         return dist
