@@ -67,22 +67,35 @@ def play_game(mcts, player, policy: NNPolicy, stateman: HEXStateManager, data):
     return state.content.get_winner()
 
 
-def play_game_new(mcts, initial_game: HEX):
-    start_state = initial_game
-    state = start_state
-    while not stateman.is_final_state(state):
-        move: Move = mcts.pick_action(state)
-        print("Chose Move",move)
-        state = stateman.do_move(state, move)
-    return state.get_winner()
+def play_game_new(mcts, initial_game: HEX, nn_policy: NNPolicy):
+    print("Playing game")
+    start: Node = mcts.tree
+    state: Node = start
+    # start_state = initial_game
+    # state = start_state
+    while not stateman.is_final_state(state.content):
+        edge: Edge = mcts.pick_action(state)
+        move: Move = edge.content
+        print("Chose Move", move.move)
+
+        dist = state.get_visit_count_distribution()
+        training_case: TrainingCase = nn_policy.__create_training_case__(state.content, dist)
+        replay_buffer.add(training_case)
+
+        state = edge.toNode
+
+    nn_policy.train(replay_buffer.get_minibatch(100))
+    replay_buffer.clear()
+    state.content.__graph_current_state__()
+    return state.content.get_winner()
 
 
 if __name__ == '__main__':
     print("Simulating HEX")
 
-    size = 2
+    size = 3
     num_nodes = size ** 2
-    G = 100
+    G = 10
     P = "Player 1"
     M = 10
     verbose = False
@@ -106,23 +119,34 @@ if __name__ == '__main__':
     # for s in states:
     #     s.__graph_current_state__()
     # exit(1)
-    mcts = MCTS(statemanager=stateman, initial_state=copy, target_policy=nn_policy, default_policy=nn_policy,
-                tree_policy=default_policy,M=M)
-
-    winner = play_game_new(mcts, game.__copy__())
-    print("Winnner",winner)
-    exit(1)
-    save_interval = G / 1
     wins = 0
     losses = 0
     winrate = []
+    for i in range(G):
+
+        mcts = MCTS(statemanager=stateman, initial_state=game.__copy__(), target_policy=nn_policy,
+                    default_policy=nn_policy,
+                    tree_policy=default_policy, M=M)
+
+        winner = play_game_new(mcts, game.__copy__(), nn_policy)
+        if winner == initial_player:
+            wins += 1
+        else:
+            losses += 1
+        winrate.append(wins / (i + 1))
+    mcts.tree.print_entire_tree()
+    print("Wins", wins)
+    print("Losses", losses)
+    print("Winrate", (wins / G) * 100, " %")
+    exit(1)
+    save_interval = G / 1
 
     for i in range(G):
         if i % (G / 10):
             print((i / G) * 100, "% done")
 
-        copy = game.__copy__()
-        mcts = MCTS(statemanager=stateman, initial_state=copy, target_policy=nn_policy, default_policy=nn_policy,
+        game_copy = game.__copy__()
+        mcts = MCTS(statemanager=stateman, initial_state=game_copy, target_policy=nn_policy, default_policy=nn_policy,
                     tree_policy=default_policy
                     , M=M)
 

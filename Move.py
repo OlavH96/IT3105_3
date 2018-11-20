@@ -10,7 +10,7 @@ class Move:
 
     def __str__(self):
         return "Move: " + str(self.parent) + " -> " + str(self.move) + " -> " + str(self.result) + ", visits=" + str(
-            self.visits) + ", reward=" + str(self.reward)
+            self.visits) + ", reward=" + str(self.reward)+", quality="+str(self.reward/(1+self.visits))
 
     def __repr__(self):
         return self.__str__()

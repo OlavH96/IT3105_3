@@ -6,7 +6,7 @@ class Edge:
         self.content = content
 
     def quality(self):
-        return self.content.reward / self.content.visits
+        return self.content.reward / (1+self.content.visits)
 
     def __str__(self):
         return "Edge{from=" + str(self.fromNode) + ", to=" + str(self.toNode) + ", content=" + str(self.content) + "}"
