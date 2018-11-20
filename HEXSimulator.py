@@ -82,8 +82,11 @@ def play_game_new(mcts, initial_game: HEX, nn_policy: NNPolicy):
             print("Chose Move", move.move, "by player", state.content.player)
 
         state = edge.toNode
-
-    nn_policy.train(replay_buffer.get_minibatch(100))
+    # print(len(replay_buffer.buffer))
+    # for tc in replay_buffer.get_minibatch(100):
+    #     print(tc.F())
+    #     print(tc.D())
+    nn_policy.train(replay_buffer.get_minibatch(5))
     if write_image:
         state.content.__graph_current_state__()
     return state.content.get_winner()
@@ -91,13 +94,14 @@ def play_game_new(mcts, initial_game: HEX, nn_policy: NNPolicy):
 
 if __name__ == '__main__':
     print("Simulating HEX")
+    time_start = time.time()
 
-    size = 3
+    size = 2
     num_nodes = size ** 2
-    G = 5
+    G = 100
     P = "Player 1"
-    M = 1000
-    verbose = False
+    M = 20
+    verbose = True
     write_image = False
 
     initial_player = Player.player_from_string(P)
@@ -107,7 +111,7 @@ if __name__ == '__main__':
 
     replay_buffer: ReplayBuffer = ReplayBuffer()
 
-    config: KerasConfig = KerasConfig(ndim=[num_nodes + 1, num_nodes, num_nodes], oaf="relu")
+    config: KerasConfig = KerasConfig(ndim=[num_nodes + 1, num_nodes*2, num_nodes], oaf="sigmoid", haf="tanh",optimizer="adam", lr=0.01)
     nn_policy = NNPolicy(config)
 
     wins = 0
@@ -130,8 +134,9 @@ if __name__ == '__main__':
             losses += 1
         winrate.append(wins / (i + 1))
 
-        if i % 10 == 0:
+        if i % (G/4) == 0 or i == G-1:
             ## save net for tournement
+            nn_policy.model.save("networks/mcts" + str(i))
             pass
 
     # mcts.tree.print_entire_tree()
@@ -154,7 +159,8 @@ if __name__ == '__main__':
     scores = nn_policy.model.evaluate(X, Y)
     print("\n%s: %.2f%%" % (nn_policy.model.metrics_names[1], scores[1] * 100))
     test_neural_net(nn_policy, 1000)
-
+    time_end = time.time()
+    print("Took:",time_end-time_start," seconds")
     exit(1)
 
 

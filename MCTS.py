@@ -50,19 +50,24 @@ class MCTS:
         return (wins - losses) / (wins + losses)
 
     def pick_action(self, state, replay_buffer):
+        # print("pick action for state",state)
         self.root = state
         start = time.time()
         for i in range(self.M):
             self.tree_search(self.root)
             if time.time()-start > 5: break
+        # print("state",state)
         dist = self.root.get_visit_count_distribution()
+        # print("dist",np.array(dist))
         training_case: TrainingCase = __create_training_case__(self.root.content, dist)
         replay_buffer.add(training_case)
+        # print(len(replay_buffer.buffer))
 
-        # self.root.print_entire_tree()
+        # for e in self.root.edges:
+        #     print(e)
         reverse = state.content.player == self.initial_state.player
-        ratings = sorted(self.root.edges, key=lambda edge: edge.quality(), reverse=reverse)
-        #print([r.quality() for r in ratings])
+        ratings = sorted(self.root.edges, key=lambda edge: edge.content.reward, reverse=reverse)
+        # print([r.quality() for r in ratings])
         self.tree = self.root
         return ratings[0]
 
@@ -72,11 +77,11 @@ class MCTS:
         if len(node.edges) == 0: #!= len(self.statemanager.get_moves(node.content)):  # and not self.statemanager.is_final_state(node.content):
             self.node_expansion(node)  # Expand nodes one layer
             # node.visits += 1
-            #self.leaf_evaluation(node)
-            for edge in node.edges:  # Get all the moves / edges
-                to_node = edge.toNode
-                evaluation = self.leaf_evaluation(to_node)  # evaluate each to-node, aka the new nodes
-                #self.backpropagation(to_node, evaluation)  # Backpropagate
+            self.leaf_evaluation(node)
+            # for edge in node.edges:  # Get all the moves / edges
+            #     to_node = edge.toNode
+            #     evaluation = self.leaf_evaluation(to_node)  # evaluate each to-node, aka the new nodes
+            #     #self.backpropagation(to_node, evaluation)  # Backpropagate
         else:
             choices = [e.content for e in node.edges]
 

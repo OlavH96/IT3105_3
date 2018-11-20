@@ -9,7 +9,7 @@ class KerasConfig:
         self.ndim: [int] = ndim
         self.haf: str = self.parseAF(haf)
         self.oaf: str = self.parseAF(oaf)
-        self.optimizer: optimizers.Optimizer = optimizer
+        self.optimizer: str = self.parseOptimizer(optimizer)
 
     def parseAF(self, haf):
         options = {
@@ -21,9 +21,9 @@ class KerasConfig:
 
     def parseOptimizer(self, optimizer):
         options = {
-            "gradientdescent": optimizers.SGD,
-            "adam": optimizers.adam,
-            "rmsprop": optimizers.rmsprop,
-            "adagrad": optimizers.adagrad
+            "gradientdescent": "sgd",
+            "adam": "adam",
+            "rmsprop": "rmsprop",
+            "adagrad": "adagrad"
         }
         return options[optimizer] or options["gradientdescent"]

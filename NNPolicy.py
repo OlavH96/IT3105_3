@@ -69,12 +69,14 @@ class NNPolicy:
         Y = [t.D() for t in training_cases]
         X = np.array(X)
         Y = np.array(Y)
-        # print(X)
-        # print(Y)
+        # print("X",X)
+        # print("Y",Y)
+        # print(len(Y))
         if len(Y) > 1:
             Y = np.interp(Y, (0, Y.max()), (0, 1))
+            # print("Interp",Y)
         #print(Y)
-            self.model.fit(x=X, y=Y, epochs=100, verbose=False)
+            self.model.fit(x=X, y=Y, epochs=100, verbose=0)
 
     def __create_training_case__(self, hex_state, distribution):
         inputs = self.__hex_to_nn_inputs__(hex_state)
