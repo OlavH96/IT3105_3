@@ -1,7 +1,11 @@
 import time
 
+import numpy as np
+
 from Move import Move
 from Node import *
+from TrainingCase import *
+from TrainingCase import __create_training_case__
 
 
 class MCTS:
@@ -25,12 +29,13 @@ class MCTS:
         initial_state = node.content
         #for i in range(self.M):  # num rollouts
 
-        state = initial_state.__copy__()
+        state:HEX = initial_state.__copy__()
 
         while not self.statemanager.is_final_state(state):
             #if len(self.statemanager.get_moves(state)) == 0: break
             move = self.default_policy.chose(state, self.statemanager.get_moves(state),
                                              initial_state.initial_player)
+
             state = self.statemanager.do_move(state, move)
             # next = current_node.addChild(move, state)
             # current_node = next
@@ -44,14 +49,21 @@ class MCTS:
 
         return (wins - losses) / (wins + losses)
 
-    def pick_action(self, state):
+    def pick_action(self, state, replay_buffer):
         self.root = state
+        start = time.time()
         for i in range(self.M):
             self.tree_search(self.root)
+            if time.time()-start > 5: break
+        dist = self.root.get_visit_count_distribution()
+        training_case: TrainingCase = __create_training_case__(self.root.content, dist)
+        replay_buffer.add(training_case)
+
         # self.root.print_entire_tree()
         reverse = state.content.player == self.initial_state.player
         ratings = sorted(self.root.edges, key=lambda edge: edge.quality(), reverse=reverse)
         #print([r.quality() for r in ratings])
+        self.tree = self.root
         return ratings[0]
 
     # Traversing the tree from the root to a leaf node by using the tree policy

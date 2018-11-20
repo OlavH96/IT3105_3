@@ -60,16 +60,21 @@ class NNPolicy:
         for (index, value) in prediction:
             if index < len(actions):
                 return actions[index]
+        print("None found")
+        print(prediction)
+        print(inputs)
 
     def train(self, training_cases: [TrainingCase]):
         X = [t.F() for t in training_cases]
         Y = [t.D() for t in training_cases]
         X = np.array(X)
         Y = np.array(Y)
-        Y = np.interp(Y, (0, Y.max()), (0, 1))
+        # print(X)
+        # print(Y)
+        if len(Y) > 1:
+            Y = np.interp(Y, (0, Y.max()), (0, 1))
         #print(Y)
-
-        self.model.fit(x=X, y=Y, epochs=100, verbose=False)
+            self.model.fit(x=X, y=Y, epochs=100, verbose=False)
 
     def __create_training_case__(self, hex_state, distribution):
         inputs = self.__hex_to_nn_inputs__(hex_state)

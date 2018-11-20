@@ -68,25 +68,24 @@ def play_game(mcts, player, policy: NNPolicy, stateman: HEXStateManager, data):
 
 
 def play_game_new(mcts, initial_game: HEX, nn_policy: NNPolicy):
-    print("Playing game")
+    if verbose:
+        print("Playing game")
     start: Node = mcts.tree
     state: Node = start
     # start_state = initial_game
     # state = start_state
     while not stateman.is_final_state(state.content):
-        edge: Edge = mcts.pick_action(state)
+        edge: Edge = mcts.pick_action(state, replay_buffer)
         move: Move = edge.content
-        print("Chose Move", move.move)
 
-        dist = state.get_visit_count_distribution()
-        training_case: TrainingCase = nn_policy.__create_training_case__(state.content, dist)
-        replay_buffer.add(training_case)
+        if verbose:
+            print("Chose Move", move.move, "by player", state.content.player)
 
         state = edge.toNode
 
     nn_policy.train(replay_buffer.get_minibatch(100))
-    replay_buffer.clear()
-    state.content.__graph_current_state__()
+    if write_image:
+        state.content.__graph_current_state__()
     return state.content.get_winner()
 
 
@@ -95,9 +94,9 @@ if __name__ == '__main__':
 
     size = 3
     num_nodes = size ** 2
-    G = 10
+    G = 5
     P = "Player 1"
-    M = 10
+    M = 1000
     verbose = False
     write_image = False
 
@@ -110,35 +109,66 @@ if __name__ == '__main__':
 
     config: KerasConfig = KerasConfig(ndim=[num_nodes + 1, num_nodes, num_nodes], oaf="relu")
     nn_policy = NNPolicy(config)
-    # game.do_move(0,0)
-    # game.do_move(1,1)
-    # print(nn_policy.chose(game))
 
-    # game.__graph_current_state__()
-    # states: [HEX] = stateman.generate_child_states(game)
-    # for s in states:
-    #     s.__graph_current_state__()
-    # exit(1)
     wins = 0
     losses = 0
     winrate = []
     for i in range(G):
+        if i % (G/10) == 0:
+            print((i/G)*100,"%","done")
 
         mcts = MCTS(statemanager=stateman, initial_state=game.__copy__(), target_policy=nn_policy,
                     default_policy=nn_policy,
                     tree_policy=default_policy, M=M)
 
         winner = play_game_new(mcts, game.__copy__(), nn_policy)
+        if i != G-1:
+            replay_buffer.clear()
         if winner == initial_player:
             wins += 1
         else:
             losses += 1
         winrate.append(wins / (i + 1))
-    mcts.tree.print_entire_tree()
+
+        if i % 10 == 0:
+            ## save net for tournement
+            pass
+
+    # mcts.tree.print_entire_tree()
+    print(nn_policy.model.get_weights())
     print("Wins", wins)
     print("Losses", losses)
     print("Winrate", (wins / G) * 100, " %")
+    plt.plot(winrate)
+    plt.xlabel("Game")
+    plt.ylabel("Winrate")
+    plt.show()
+
+    training_cases = replay_buffer.get_minibatch(1000000)
+    X = [t.F() for t in training_cases]
+    Y = [t.D() for t in training_cases]
+    X = np.array(X)
+    Y = np.array(Y)
+    Y = np.interp(Y, (0, Y.max()), (0, 1))
+
+    scores = nn_policy.model.evaluate(X, Y)
+    print("\n%s: %.2f%%" % (nn_policy.model.metrics_names[1], scores[1] * 100))
+    test_neural_net(nn_policy, 1000)
+
     exit(1)
+
+
+
+
+
+
+
+
+
+
+
+
+
     save_interval = G / 1
 
     for i in range(G):
