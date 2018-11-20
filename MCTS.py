@@ -40,7 +40,7 @@ class MCTS:
         if not policy: policy = self.policy
 
         if len(node.edges) == 0:  # and not self.statemanager.is_final_state(node.content):
-            print("Expanding",node)
+            # print("Expanding",node)
             self.node_expansion(node)  # Expand nodes one layer
             # node.visits += 1
             for edge in node.edges:  # Get all the moves / edges
@@ -51,11 +51,11 @@ class MCTS:
             pass
 
         choices = [e.content for e in node.edges]
-        for c in choices:
-            print(c)
-        print(choices)
-        # TODO får ikke move tilbake, fucker opp getchildbyedge, fix
-        choice = policy.chose(node.content, choices, node.content.initial_player)
+        # for c in choices:
+        #     print(c)
+        # print(choices)
+        # Todo Tree policy here?
+        choice = policy.chose(node, choices, node.content.initial_player)
         # choice.visits += 1
         # print("choice", choice)
         return choice

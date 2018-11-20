@@ -3,9 +3,14 @@ import numpy as np
 from HEX import *
 from HEXCell import *
 import math
+
+from Move import Move
+from Node import Node
+from TrainingCase import TrainingCase
 from kerasnn.KerasConfig import *
 from kerasnn.KerasNN import *
 
+from sklearn.preprocessing import scale
 
 class NNPolicy:
 
@@ -37,17 +42,38 @@ class NNPolicy:
 
     # hex in this case is a "current" state.
     # returns probabilties for every possible move from there
-    def chose(self, hex: HEX, actions=None, init_player=None):
-        possible_moves = hex.get_all_legal_moves()
+    def chose(self, node: Node, actions=None, init_player=None) -> Move:
+        if hasattr(node, "content"):
+            hex: HEX = node.content
+        else:
+            hex: HEX = node
+        # possible_moves = hex.get_all_legal_moves()
 
         model: Model = self.model
         inputs = self.__hex_to_nn_inputs__(hex)
-        inputs = [[inputs]]
+        inputs = [[inputs + [Player.to_int(hex.player)]]]
 
         prediction = model.predict(inputs)
         prediction = prediction.tolist()[0]
-        prediction = [(i,v) for (i,v) in enumerate(prediction)]
-        prediction.sort(key=lambda x:x[1], reverse=True)
+        prediction = [(i, v) for (i, v) in enumerate(prediction)]
+        prediction.sort(key=lambda x: x[1], reverse=True)
         for (index, value) in prediction:
-            if index < len(possible_moves):
-                return possible_moves[index]
+            if index < len(actions):
+                return actions[index]
+
+    def train(self, training_cases: [TrainingCase]):
+        X = [t.F() for t in training_cases]
+        Y = [t.D() for t in training_cases]
+        X = np.array(X)
+        Y = np.array(Y)
+        Y = np.interp(Y, (0, Y.max()), (0, 1))
+        #print(Y)
+
+        self.model.fit(x=X, y=Y, epochs=100, verbose=False)
+
+    def __create_training_case__(self, hex_state, distribution):
+        inputs = self.__hex_to_nn_inputs__(hex_state)
+        dist = [v for d, v in distribution]
+        PID = Player.to_int(hex_state)
+        # inputs = [[inputs]]
+        return TrainingCase(inputs, dist, PID)

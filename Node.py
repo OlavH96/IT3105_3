@@ -19,9 +19,9 @@ class Node:
         return Node.find(content, self)
 
     def getChildByEdge(self, edgeContent):
-        print("Getting child by edge",self, edgeContent)
+        # print("Getting child by edge",self, edgeContent)
         for edge in self.edges:
-            print("Edge",edge.content)
+            # print("Edge",edge.content)
             if edge.content == edgeContent: return edge.toNode
 
     def getEdgeTo(self, otherNode):
@@ -61,3 +61,7 @@ class Node:
             node = Node.find(content, c.toState)
             if node is not None:
                 return node
+
+    def get_visit_count_distribution(self):
+        dist = [(e.content.parent, e.toNode.visits) for e in self.edges]
+        return dist
