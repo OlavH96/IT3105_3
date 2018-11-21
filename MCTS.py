@@ -1,3 +1,4 @@
+import random
 import time
 
 import numpy as np
@@ -16,80 +17,68 @@ class MCTS:
         self.root = initial_state
         self.tree = Node(self.root)
         self.M = M
-        self.policy = target_policy
-        self.default_policy = default_policy
+        self.target_policy = target_policy
+        self.default_policy = default_policy  # aka Behaviour policy
         self.tree_policy = tree_policy
 
     # Estimating the value of a leaf node in the tree by doing a rollout simulation using
     # the default policy from the leaf node’s state to a final state.
     def leaf_evaluation(self, node):
-        wins = 0
-        losses = 0
 
         initial_state = node.content
-        #for i in range(self.M):  # num rollouts
 
-        state:HEX = initial_state.__copy__()
+        state: HEX = initial_state.__copy__()
 
         while not self.statemanager.is_final_state(state):
-            #if len(self.statemanager.get_moves(state)) == 0: break
-            move = self.default_policy.chose(state, self.statemanager.get_moves(state),
-                                             initial_state.initial_player)
 
+            epsilon = 0.1
+
+            if random.random() < epsilon: # do random choice
+                move = random.choice(self.statemanager.get_moves(state))
+            else:
+                move = self.default_policy.chose(state, self.statemanager.get_moves(state),
+                                                 initial_state.initial_player)
             state = self.statemanager.do_move(state, move)
-            # next = current_node.addChild(move, state)
-            # current_node = next
 
-        if self.statemanager.is_win(state, initial_state.initial_player):  # state.winnerF() == self.root.player:
-            wins += 1
+        if self.statemanager.is_win(state, initial_state.initial_player):
+            return 1
         else:
-            losses += 1
-
-        self.backpropagation(node, (wins - losses) / (wins + losses))
-
-        return (wins - losses) / (wins + losses)
+            return -1
 
     def pick_action(self, state, replay_buffer):
-        # print("pick action for state",state)
         self.root = state
-        start = time.time()
+
         for i in range(self.M):
             self.tree_search(self.root)
-            if time.time()-start > 5: break
-        # print("state",state)
+
         dist = self.root.get_visit_count_distribution()
-        # print("dist",np.array(dist))
         training_case: TrainingCase = __create_training_case__(self.root.content, dist)
         replay_buffer.add(training_case)
-        # print(len(replay_buffer.buffer))
 
         # for e in self.root.edges:
         #     print(e)
-        reverse = state.content.player == self.initial_state.player
-        ratings = sorted(self.root.edges, key=lambda edge: edge.content.reward, reverse=reverse)
+
+        reverse = state.content.player == self.initial_state.player # best or worse path?
+        ratings = sorted(self.root.edges, key=lambda edge: edge.content.visits, reverse=reverse)
         # print([r.quality() for r in ratings])
+
         self.tree = self.root
         return ratings[0]
 
     # Traversing the tree from the root to a leaf node by using the tree policy
     def tree_search(self, node):
 
-        if len(node.edges) == 0: #!= len(self.statemanager.get_moves(node.content)):  # and not self.statemanager.is_final_state(node.content):
+        if len(node.edges) == 0:  # found leaf
             self.node_expansion(node)  # Expand nodes one layer
-            # node.visits += 1
-            self.leaf_evaluation(node)
-            # for edge in node.edges:  # Get all the moves / edges
-            #     to_node = edge.toNode
-            #     evaluation = self.leaf_evaluation(to_node)  # evaluate each to-node, aka the new nodes
-            #     #self.backpropagation(to_node, evaluation)  # Backpropagate
-        else:
+            eval: float = self.leaf_evaluation(node)
+            self.backpropagation(node, eval)
+
+        else:  # Use tree policy to chose next node
             choices = [e.content for e in node.edges]
 
-            choice :Move= self.tree_policy.chose(node, choices, node.content.initial_player)
+            choice: Move = self.tree_policy.chose(node, choices, node.content.initial_player)
             child = node.getChildByEdge(choice)
-            self.tree_search(child)
-
-        #return choice
+            self.tree_search(child)  # continue
 
     # Generating some or all child states of a parent state, and then connecting the tree
     # node housing the parent state (a.k.a. parent node) to the nodes housing the child states (a.k.a. child
