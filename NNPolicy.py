@@ -35,10 +35,11 @@ class NNPolicy:
         mapped = list(map(lambda hexcell: self.map_by_player(hexcell), cells))
         return mapped
 
-    def __init__(self, keras_config: KerasConfig):
-        self.config: KerasConfig = keras_config
-        self.nn: KerasNN = KerasNN(keras_config)
-        self.model: Model = self.nn.build()
+    def __init__(self, keras_config: KerasConfig=None):
+        if keras_config:
+            self.config: KerasConfig = keras_config
+            self.nn: KerasNN = KerasNN(keras_config)
+            self.model: Model = self.nn.build()
 
     # hex in this case is a "current" state.
     # returns probabilties for every possible move from there

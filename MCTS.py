@@ -33,7 +33,7 @@ class MCTS:
 
             epsilon = 0.1
 
-            if random.random() < epsilon: # do random choice
+            if random.random() < epsilon:  # do random choice
                 move = random.choice(self.statemanager.get_moves(state))
             else:
                 move = self.default_policy.chose(state, self.statemanager.get_moves(state),
@@ -47,9 +47,11 @@ class MCTS:
 
     def pick_action(self, state, replay_buffer):
         self.root = state
-
+        time_limit = 5 # 5 seconds
+        time_start = time.time()
         for i in range(self.M):
             self.tree_search(self.root)
+            if time.time() - time_start > time_limit: break
 
         dist = self.root.get_visit_count_distribution()
         training_case: TrainingCase = __create_training_case__(self.root.content, dist)
@@ -58,7 +60,7 @@ class MCTS:
         # for e in self.root.edges:
         #     print(e)
 
-        reverse = state.content.player == self.initial_state.player # best or worse path?
+        reverse = state.content.player == self.initial_state.player  # best or worse path?
         ratings = sorted(self.root.edges, key=lambda edge: edge.content.visits, reverse=reverse)
         # print([r.quality() for r in ratings])
 

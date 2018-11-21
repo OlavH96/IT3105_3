@@ -13,6 +13,7 @@ from Policy import *
 from kerasnn.KerasConfig import *
 from ReplayBuffer import *
 import matplotlib.pyplot as plt
+import LoadNetwork
 
 
 def test_neural_net(nn_policy: NNPolicy, num_games: int):
@@ -41,7 +42,7 @@ def test_neural_net(nn_policy: NNPolicy, num_games: int):
 
 def play_game(mcts, nn_policy: NNPolicy):
     if verbose:
-        print("Playing game")
+        print("Playing game", i)
 
     start: Node = mcts.tree
     state: Node = start
@@ -52,7 +53,9 @@ def play_game(mcts, nn_policy: NNPolicy):
 
         if verbose:
             print("Chose Move", move.move, "by player", state.content.player)
-
+        if graph_every_move[0]:
+            state.content.__graph_current_state__()
+            time.sleep(graph_every_move[1])
         state = edge.toNode
     if debug:
         print(len(replay_buffer.buffer))
@@ -70,21 +73,23 @@ if __name__ == '__main__':
     print("Simulating HEX")
     time_start = time.time()
 
-    size = 4
-    G = 10
+    size = 5
+    G = 100
     P = "Player 1"
-    M = 20
-    verbose = False
-    write_image = False
-    save_networks = False
+    M = 10
+    verbose = True
+    write_image = True
+    graph_every_move = (True, 1)
+    save_networks = True
     save_networks_interval = G / 10
-    plot_winrate = False
+    plot_winrate = True
     debug = False
 
     num_nodes = size ** 2
-    config: KerasConfig = KerasConfig(ndim=[num_nodes + 1, num_nodes * 2, num_nodes],
+    config: KerasConfig = KerasConfig(ndim=[num_nodes + 1, 80, 50, num_nodes],
                                       oaf="sigmoid", haf="tanh",
                                       optimizer="adam", lr=0.01)
+
     initial_player = Player.player_from_string(P)
 
     policy = Policy(initial_player)  # same as from last assignment
@@ -118,8 +123,7 @@ if __name__ == '__main__':
 
         if i % (save_networks_interval) == 0 or i == G - 1 and save_networks:
             ## save net for tournement
-            nn_policy.model.save("networks/mcts" + str(i))
-            pass
+            nn_policy.model.save("networks/mcts" + str(size) + "_" + str(i))
 
     print("Wins", wins)
     print("Losses", losses)
