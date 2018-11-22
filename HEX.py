@@ -145,7 +145,7 @@ class HEX:
         return _nodes
 
     def __graph_current_state__(self, file_number=""):
-        HEXDrawer.graph(self.__get_all_cells_as_list__(), name="HEX"+str(file_number))
+        HEXDrawer.graph(self.__get_all_cells_as_list__(), name="HEX" + str(file_number))
 
     def __copy__(self):
         # hex:HEX = HEX(self.size,self.initial_player)
@@ -158,3 +158,12 @@ class HEX:
     def __str__(self):
         taken = sum(map(lambda cell: cell.player is not None, self.__get_all_cells_as_list__()))
         return "HEX{" + str(taken) + "/" + str(self.size ** 2) + "}"
+    @staticmethod
+    def from_tournement_state(state: [int], size, init_player, current_player):
+        game = HEX(size, init_player)
+        state = state[1:]
+        cells = game.__get_all_cells_as_list__()
+        for s, c in zip(state, cells):
+            c.player = Player.player_from_int(s)
+        game.player = current_player
+        return game

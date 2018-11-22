@@ -59,10 +59,10 @@ class MCTS:
 
         # for e in self.root.edges:
         #     print(e)
-
-        reverse = state.content.player == self.initial_state.player  # best or worse path?
+        reverse = True
+        #reverse = state.content.player == self.initial_state.player
         ratings = sorted(self.root.edges, key=lambda edge: edge.content.visits, reverse=reverse)
-        # print([r.quality() for r in ratings])
+        #print([r.content.visits for r in ratings])
 
         self.tree = self.root
         return ratings[0]
@@ -80,6 +80,7 @@ class MCTS:
 
             choice: Move = self.tree_policy.chose(node, choices, node.content.initial_player)
             child = node.getChildByEdge(choice)
+            #self.root = child
             self.tree_search(child)  # continue
 
     # Generating some or all child states of a parent state, and then connecting the tree

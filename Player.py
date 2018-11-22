@@ -26,3 +26,6 @@ class Player(Enum):
         else:
             raise Exception("Invalid Player Choice")
         return init_player
+    @staticmethod
+    def player_from_int(i):
+        return Player.PLAYER_1 if i == 1 else Player.PLAYER_2 if i == -1 else None

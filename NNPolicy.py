@@ -43,7 +43,7 @@ class NNPolicy:
 
     # hex in this case is a "current" state.
     # returns probabilties for every possible move from there
-    def chose(self, node: Node, actions=None, init_player=None) -> Move:
+    def chose(self, node: Node, actions=None, init_player=None, player=None) -> Move:
         if hasattr(node, "content"):
             hex: HEX = node.content
         else:
