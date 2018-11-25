@@ -62,6 +62,7 @@ def best_fit_slope_and_intercept(xs, ys):
 
     return m, b
 
+
 def TOPP_tournement_folder(files, size, num_games):
     files = sorted(files)
     policies = {file: None for file in files}
@@ -100,24 +101,24 @@ def TOPP_tournement_folder(files, size, num_games):
 
     for d in data:
         x = list(range(0, len(files)))
-        y=d
+        y = d
         m, b = best_fit_slope_and_intercept(x, y)
 
         regression_line = [(m * xs) + b for xs in x]
-        plt.scatter(x=x,y=y)
-        plt.plot(x,regression_line)
-    plt.legend([x for x in winratemap.keys()], loc="upper left", bbox_to_anchor=(1,1))
+        plt.scatter(x=x, y=y)
+        plt.plot(x, regression_line)
+    plt.legend([x for x in winratemap.keys()], loc="upper left", bbox_to_anchor=(1, 1))
     plt.show()
 
 
 if __name__ == '__main__':
-    games = 1000
+    games = 50
     size = 5
     plot_winrate = False
 
-    folder = "networks/size" + str(size)+ "_1000_100"
+    folder = "networks/size" + str(size) + "_1000_100"
     files = os.listdir(folder)
-    files = list(filter(lambda file: os.path.isfile(os.path.join(folder,file)),files))
+    files = list(filter(lambda file: os.path.isfile(os.path.join(folder, file)), files))
     print(files)
 
     TOPP_tournement_folder(files, size, 100)

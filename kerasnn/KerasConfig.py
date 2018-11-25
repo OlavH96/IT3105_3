@@ -16,6 +16,7 @@ class KerasConfig:
             "sigmoid": "sigmoid",
             "tanh": "tanh",
             "relu": "relu",
+            "softmax":"softmax"
         }
         return options[haf] or options["sigmoid"]
 

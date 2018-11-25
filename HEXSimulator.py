@@ -13,7 +13,7 @@ from Policy import *
 from kerasnn.KerasConfig import *
 from ReplayBuffer import *
 import matplotlib.pyplot as plt
-import LoadNetwork
+import TOPP
 
 
 def test_TOPP(policy_1: NNPolicy, policy_2: NNPolicy, size: int, num_games: int, verbose=False):
@@ -98,7 +98,6 @@ def play_game(mcts, nn_policy: NNPolicy):
     if verbose:
         print("Playing game", i, "/", G)
 
-
     start: Node = mcts.tree
     state: Node = start
     if write_image:
@@ -130,26 +129,25 @@ if __name__ == '__main__':
     print("Simulating HEX")
     time_start = time.time()
 
-    size = 3 # size of game board
-    G = 10 # episodes
+    size = 5  # size of game board
+    G = 15  # episodes
     P = "Player 1"
-    M = 100 # number of search games
-    K = 4
+    M = 10  # number of search games
+    K = 3
     verbose = True
     write_image = True
-    graph_every_move = (True, 1)  # sleep time
+    graph_every_move = (True, 0.1)  # sleep time
     save_networks = True
-    save_networks_interval = G / 4  # 'is'
     plot_winrate = False
     debug = False
 
+    save_networks_interval = G / K  # 'is'
     num_nodes = size ** 2
-    config: KerasConfig = KerasConfig(ndim=[num_nodes + 1, 80, 50, num_nodes],
-                                      oaf="sigmoid", haf="tanh",  # haf relu, oaf softmax
-                                      optimizer="adam", lr=0.01)
+    config: KerasConfig = KerasConfig(ndim=[num_nodes + 1, 100, 100, num_nodes],
+                                      oaf="softmax", haf="tanh",  # haf relu, oaf softmax
+                                      optimizer="rmsprop", lr=0.1)
 
     replay_buffer: ReplayBuffer = ReplayBuffer()
-
 
     initial_player = Player.player_from_string(P)
 
@@ -170,7 +168,8 @@ if __name__ == '__main__':
         if i % (G / 10) == 0 and not verbose:
             print((i / G) * 100, "%", "done")
 
-        mcts = MCTS(statemanager=stateman, initial_state=game.__copy__(), target_policy=nn_policy,
+        mcts = MCTS(statemanager=stateman, initial_state=game.__copy__(),
+                    target_policy=nn_policy,
                     default_policy=nn_policy,
                     tree_policy=policy, M=M)
 
@@ -206,6 +205,7 @@ if __name__ == '__main__':
 
     if debug:
         print(nn_policy.model.get_weights())
+    # Test accuracy of network
     training_cases = replay_buffer.get_minibatch(1000000)
     X = [t.F() for t in training_cases]
     Y = [t.D() for t in training_cases]
@@ -215,7 +215,7 @@ if __name__ == '__main__':
 
     scores = nn_policy.model.evaluate(X, Y)
     print("\n%s: %.2f%%" % (nn_policy.model.metrics_names[1], scores[1] * 100))
-
+    # Test vs random player
     wr = test_neural_net(nn_policy, 1000, size)
     print("Winrate vs random player: ", wr)
     time_end = time.time()
